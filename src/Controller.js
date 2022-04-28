@@ -9,13 +9,10 @@ class Controller extends EventEmitter {
         this.controls = {};
 
         // Set up control map with type to class conversions
-        this.controlMap = {};
-        for (const key in controlMap) {
-            this.controlMap[key] = controlMap[key];
-        }
-        for (const key in controlClasses) {
-            this.controlMap[key] = controlClasses[key];
-        }
+        this.controlMap = {
+            ...controlMap,
+            ...controlClasses
+        };
 
         devices.forEach((device) => this.addDevice(device));
     }
