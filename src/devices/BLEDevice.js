@@ -1,5 +1,6 @@
 /* global BluetoothUUID, console, navigator */
 import BLECharacteristics from './specs/ble-characteristics.json';
+import BLEDescriptors from './specs/ble-descriptors';
 import BLEFormats from './specs/ble-formats';
 import EventEmitter from 'events';
 
@@ -68,14 +69,14 @@ class BLEDevice extends EventEmitter {
                         const
                             descriptors = await characteristic.getDescriptors();
 
-                        descriptors.forEach(async (value) => {
+                        descriptors.forEach(async (descriptor) => {
                             const
-                                byte = (await value.readValue()).getUint8();
+                                value = (BLEDescriptors[descriptor.uuid] ?? BLEDescriptors['default']).convert(await descriptor.readValue());
 
-                            if (value.uuid === presentationFormat) {
-                                format = BLEFormats[byte] || BLEFormats[0];
+                            if (descriptor.uuid === presentationFormat) {
+                                format = BLEFormats[value] || BLEFormats[0];
                             }
-                            console.log(`${value.uuid} | ${friendlyName}`, byte);
+                            console.log(`${descriptor.uuid} | ${friendlyName}`, value);
                         });
                     } catch (e) {
                     }
