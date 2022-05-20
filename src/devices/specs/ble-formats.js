@@ -1,7 +1,7 @@
 /* global TextDecoder */
 export default [{ // 0x0
     description: "Reserved For Future Use",
-    convert: (dataView) => dataView
+    convert: (dataView) => dataView.byteLength ? dataView : null
 }, { // 0x1
     description: "Boolean",
     convert: (dataView) => dataView.getInt8()
