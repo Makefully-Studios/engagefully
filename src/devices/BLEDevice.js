@@ -1,8 +1,33 @@
-/* global BluetoothUUID, console, navigator */
+/* global console, navigator */
 import BLECharacteristics from './specs/ble-characteristics.json';
 import BLEDescriptors from './specs/ble-descriptors';
 import BLEFormats from './specs/ble-formats';
 import EventEmitter from 'events';
+
+const
+    getDescriptorValue = (uuid, characteristic) => {
+        const
+            descriptors = characteristic?.descriptors;
+
+        if (descriptors) {
+            const
+                descriptor = descriptors.find((value) => value.uuid === uuid);
+
+            if (descriptor) {
+                return descriptor.value;
+            }
+        }
+
+        return null;
+    },
+    getCharacteristicUserDescription = (characteristic) => {
+        if (typeof characteristic === 'string') {
+            return characteristic;
+        } else {
+            return getDescriptorValue('2901', characteristic) || getDescriptorValue('00002904-0000-1000-8000-00805f9b34fb', characteristic);
+        }
+    },
+    getCharacteristicPresentationFormat = getDescriptorValue.bind(null, "2904");
 
 let ble = null,
     cordova = null;
@@ -46,8 +71,6 @@ class CordovaBLEDevice extends EventEmitter {
 
         if (device) {
             const
-                services = device.services,
-                presentationFormat = BluetoothUUID.getDescriptor('gatt.characteristic_presentation_format'),
                 characteristics = device.characteristics;
 
             this.device = device;
@@ -55,20 +78,15 @@ class CordovaBLEDevice extends EventEmitter {
             characteristics.forEach(async (characteristic) => {
                 const
                     properties = characteristic.properties,
-                    friendlyName = this.uuidMap[characteristic.characteristic] || characteristic.characteristic,
-                    descriptors = characteristic.descriptors || [];
-                let format = BLEFormats[14]; // Assume signed Int 16 unless otherwise specified.
+                    characteristicDescription = this.uuidMap[characteristic.characteristic],
+                    friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.characteristic,
+                    descriptors = characteristic.descriptors || [],
+                    format = BLEFormats[getCharacteristicPresentationFormat(characteristicDescription) || 14]; // Assume signed Int 16 unless otherwise specified.
 
                 console.log(friendlyName, characteristic);
 
                 descriptors.forEach((descriptor) => {
-                    const
-                        value = (BLEDescriptors[descriptor.uuid] ?? BLEDescriptors['default']).convert(descriptor.value);
-
-                    if (descriptor.uuid === presentationFormat) {
-                        format = BLEFormats[value] || BLEFormats[0];
-                    }
-                    console.log(`${descriptor.uuid} | ${friendlyName}`, value);
+                    console.log(`${descriptor.uuid} | ${friendlyName}`, descriptor);
                 });
 
                 if (properties.indexOf('Read') >= 0) {
@@ -90,11 +108,11 @@ class CordovaBLEDevice extends EventEmitter {
                         };
                     let lastValue = null;
 
-                    this.ble.startNotification(device.id, characteristic.service, characteristic.characteristic, (buffer) => {
+                    this.ble.startNotification(device.id, characteristic.service, characteristic.characteristic, (buffer, index) => {
                         const
                             newValue = format.convert(new DataView(buffer));
 
-                        console.log(`${friendlyName} value changed.`, newValue);
+                        console.log(`${friendlyName} value changed.`, newValue, index);
                         if (lastValue !== newValue) {
                             msg.value = lastValue = newValue;
                             this.emit('updated', msg);
@@ -235,7 +253,7 @@ class WebkitBLEDevice extends EventEmitter {
             const
                 gatt = this.device.gatt,
                 services = await gatt.getPrimaryServices(),
-                presentationFormat = BluetoothUUID.getDescriptor('gatt.characteristic_presentation_format');
+                presentationFormat = '00002904-0000-1000-8000-00805f9b34fb';
 
             services.forEach(async (service) => {
                 const
@@ -244,7 +262,8 @@ class WebkitBLEDevice extends EventEmitter {
                 characteristics.forEach(async (characteristic) => {
                     const
                         properties = characteristic.properties,
-                        friendlyName = this.uuidMap[characteristic.uuid] || characteristic.uuid;
+                        characteristicDescription = this.uuidMap[characteristic.characteristic],
+                        friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.uuid;
                     let format = BLEFormats[14]; // Assume signed Int 16 unless otherwise specified.
 
                     console.log(friendlyName, characteristic);
@@ -252,6 +271,7 @@ class WebkitBLEDevice extends EventEmitter {
                     try {
                         const
                             descriptors = await characteristic.getDescriptors();
+                        let formatFound = false;
 
                         descriptors.forEach(async (descriptor) => {
                             const
@@ -259,9 +279,19 @@ class WebkitBLEDevice extends EventEmitter {
 
                             if (descriptor.uuid === presentationFormat) {
                                 format = BLEFormats[value] || BLEFormats[0];
+                                formatFound = true;
                             }
                             console.log(`${descriptor.uuid} | ${friendlyName}`, value);
                         });
+
+                        if (!formatFound) {
+                            const
+                                localDefinition = getCharacteristicPresentationFormat(characteristicDescription);
+
+                            if (localDefinition) {
+                                format = BLEFormats[localDefinition];
+                            }
+                        }
                     } catch (e) {
                     }
 
