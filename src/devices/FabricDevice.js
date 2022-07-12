@@ -69,6 +69,8 @@ class FabricDevice extends EventEmitter {
             }
 
             this.emit('updated', msg);
+
+            event.stopPropagation();
         });
 
         // FabricDrag
@@ -96,6 +98,8 @@ class FabricDevice extends EventEmitter {
             }
 
             this.emit('updated', msg);
+
+            event.stopPropagation();
         });
 
         // FabricDial
