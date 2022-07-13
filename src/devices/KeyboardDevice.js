@@ -1,33 +1,26 @@
 import EventEmitter from 'events';
 
 class KeyboardDevice extends EventEmitter {
-    constructor () {
+    constructor (device = 'Keyboard') {
         super();
 
-        this.message = {
-            control: '',
-            device: 'Keyboard',
-            type: 'Button',
-            value: 0
-        }
-
         window.addEventListener('keydown', (event) => {
-            const
-                msg = this.message;
-
-            msg.control = event.code;
-            msg.value = 1;
-
-            this.emit('updated', msg);
+            this.emit('updated', {
+                control: event.code,
+                device,
+                event,
+                type: 'Button',
+                value: 1
+            });
         });
         window.addEventListener('keyup', (event) => {
-            const
-                msg = this.message;
-
-            msg.control = event.code;
-            msg.value = 0;
-
-            this.emit('updated', msg);
+            this.emit('updated', {
+                control: event.code,
+                device,
+                event,
+                type: 'Button',
+                value: 0
+            });
         });
     }
 }

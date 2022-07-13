@@ -3,16 +3,20 @@
  * @memberof engagefully
  */
 import BLEDevice from './BLEDevice';
-import KeyboardDevice from './KeyboardDevice';
 import FabricDevice from './FabricDevice';
 import GamepadDevice from './GamepadDevice';
+import KeyboardDevice from './KeyboardDevice';
 import PageDevice from './PageDevice';
+import PixiDevice from './PixiDevice';
+import PointerDevice from './PointerDevice';
  
 export default {
     BLEDevice,
-    KeyboardDevice,
     FabricDevice,
     GamepadDevice,
-    PageDevice
+    KeyboardDevice,
+    PageDevice,
+    PixiDevice,
+    PointerDevice
 };
  

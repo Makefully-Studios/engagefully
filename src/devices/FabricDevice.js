@@ -7,7 +7,6 @@ class FabricDevice extends EventEmitter {
         this.pressed = 0;
 
         // FabricPointer
-
         target.on('mousedown', (event) => {
             this.pressed = 1;
             this.emit('updated', {

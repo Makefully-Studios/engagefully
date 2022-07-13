@@ -1,50 +1,48 @@
 import EventEmitter from 'events';
 
 class PixiDevice extends EventEmitter {
-    constructor (optionsOrTarget) {
+    constructor (target, device = 'PixiDevice') {
         super();
 
-        const
-            options = optionsOrTarget.target ? optionsOrTarget : null,
-            target = this.target = optionsOrTarget.target ?? optionsOrTarget,
-            aEL = target.on ? 'on' : 'addEventListener';
+        this.pressed = 0;
 
-        this.message = {
-            type: 'Pointer',
-            id: target.id || options.id || 'pointer',
-            value: 0,
-            x: 0,
-            y: 0
-        }
-
-        target[aEL](options?.down ?? 'pointerdown', (event) => {
-            const
-                msg = this.message;
-
-            msg.value = 1;
-            msg.x = event.x;
-            msg.y = event.y;
-
-            this.emit('updated', msg);
+        target.on('pointerdown', (event) => {
+            this.pressed = 1;
+            this.emit('updated', {
+                control: 'Pointer',
+                device,
+                event,
+                target,
+                type: 'Pointer',
+                value: this.pressed,
+                x: event.x,
+                y: event.y
+            });
         });
-        target[aEL](options?.move ?? 'pointermove', (event) => {
-            const
-                msg = this.message;
-
-            msg.x = event.x;
-            msg.y = event.y;
-
-            this.emit('updated', msg);
+        target.on('pointermove', (event) => {
+            this.emit('updated', {
+                control: 'Pointer',
+                device,
+                event,
+                target,
+                type: 'Pointer',
+                value: this.pressed,
+                x: event.x,
+                y: event.y
+            });
         });
-        target[aEL](options?.up ?? 'pointerup', (event) => {
-            const
-                msg = this.message;
-
-            msg.value = 0;
-            msg.x = event.x;
-            msg.y = event.y;
-
-            this.emit('updated', msg);
+        target.on(options?.up ?? 'pointerup', (event) => {
+            this.pressed = 0;
+            this.emit('updated', {
+                control: 'Pointer',
+                device,
+                event,
+                target,
+                type: 'Pointer',
+                value: this.pressed,
+                x: event.x,
+                y: event.y
+            });
         });
     }
 }

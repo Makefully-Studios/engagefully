@@ -119,19 +119,19 @@ class Gamepad extends EventEmitter {
             if (oldVector.x !== newVector.x || oldVector.y !== newVector.y) {
                 const
                     x = newVector.x,
-                    y = newVector.y,
-                    event = {
-                        control: controllers[`a${i}`],
-                        device: this.id,
-                        type: 'Joystick',
-                        x,
-                        y
-                    };
+                    y = newVector.y;
 
                 oldVector.x = x;
                 oldVector.y = y;
 
-                this.emit('updated', event);
+                this.emit('updated', {
+                    control: controllers[`a${i}`],
+                    device: this.id,
+                    target: this,
+                    type: 'Joystick',
+                    x,
+                    y
+                });
             }
         }
         
@@ -142,17 +142,14 @@ class Gamepad extends EventEmitter {
                 oldButton = buttons[i];
             
             if (newValue !== oldButton) {
-                const
-                    event = {
-                        control: controllers[`b${i}`],
-                        device: this.id,
-                        type: 'Button',
-                        value: newValue
-                    };
-
                 buttons[i] = newValue;
-
-                this.emit('updated', event);
+                this.emit('updated', {
+                    control: controllers[`b${i}`],
+                    device: this.id,
+                    target: this,
+                    type: 'Button',
+                    value: newValue
+                });
             }
         }
     }

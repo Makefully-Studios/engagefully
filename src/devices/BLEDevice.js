@@ -99,23 +99,22 @@ class CordovaBLEDevice extends EventEmitter {
 
                 if (properties.indexOf('Notify') >= 0) {
                     const
-                        type = format.description === 'Boolean' ? 'Button' : 'Amount',
-                        msg = {
-                            control: friendlyName,
-                            device: this.deviceName,
-                            type,
-                            value: 0
-                        };
+                        type = format.description === 'Boolean' ? 'Button' : 'Amount';
                     let lastValue = null;
 
                     this.ble.startNotification(device.id, characteristic.service, characteristic.characteristic, (buffer, index) => {
                         const
                             newValue = format.convert(new DataView(buffer));
 
-                        console.log(`${friendlyName} value changed.`, newValue, index);
                         if (lastValue !== newValue) {
-                            msg.value = lastValue = newValue;
-                            this.emit('updated', msg);
+                            console.log(`${friendlyName} value changed.`, newValue, index);
+                            lastValue = newValue;
+                            this.emit('updated', {
+                                control: friendlyName,
+                                device: this.deviceName,
+                                type,
+                                value: newValue
+                            });
                         }
                     }, (err) => {
                         throw err;
@@ -180,6 +179,7 @@ class CordovaBLEDevice extends EventEmitter {
                     this.emit('updated', {
                         control: `${this.deviceName}Connection`,
                         device: this.deviceName,
+                        target: device,
                         type: 'Button',
                         value: 1
                     });
@@ -310,19 +310,18 @@ class WebkitBLEDevice extends EventEmitter {
                                     target = event.currentTarget,
                                     newValue = format.convert(target.value);
 
-                                console.log(`${friendlyName} value changed.`, newValue);
                                 if (lastValue !== newValue) {
-                                    msg.value = lastValue = newValue;
-                                    this.emit('updated', msg);
+                                    console.log(`${friendlyName} value changed.`, newValue);
+                                    lastValue = newValue;
+                                    this.emit('updated', {
+                                        control: friendlyName,
+                                        device: this.deviceName,
+                                        type,
+                                        value: newValue
+                                    });
                                 }
                             },
-                            type = format.description === 'Boolean' ? 'Button' : 'Amount',
-                            msg = {
-                                control: friendlyName,
-                                device: this.deviceName,
-                                type,
-                                value: 0
-                            };
+                            type = format.description === 'Boolean' ? 'Button' : 'Amount';
                         let lastValue = null;
 
                         await characteristic.startNotifications();
@@ -346,6 +345,7 @@ class WebkitBLEDevice extends EventEmitter {
                 this.emit('updated', {
                     control: `${this.deviceName}Connection`,
                     device: this.deviceName,
+                    target: this.device,
                     type: 'Button',
                     value: 1
                 });

@@ -1,45 +1,48 @@
 import EventEmitter from 'events';
 
 class PointerDevice extends EventEmitter {
-    constructor (target) {
+    constructor (target, device = 'PointerDevice') {
         super();
 
-        this.message = {
-            type: 'Pointer',
-            id: target.id || 'pointer',
-            value: 0,
-            x: 0,
-            y: 0
-        }
+        this.pressed = 0;
 
         target.addEventListener('pointerdown', (event) => {
-            const
-                msg = this.message;
-
-            msg.value = 1;
-            msg.x = event.x ?? event.pointer?.x;
-            msg.y = event.y ?? event.pointer?.y;
-
-            this.emit('updated', msg);
+            this.pressed = 1;
+            this.emit('updated', {
+                control: 'Pointer',
+                device,
+                event,
+                target,
+                type: 'Pointer',
+                value: this.pressed,
+                x: event.x ?? event.pointer?.x,
+                y: event.y ?? event.pointer?.y
+            });
         });
         target.addEventListener('pointermove', (event) => {
-            const
-                msg = this.message;
-
-            msg.x = event.x ?? event.pointer?.x;
-            msg.y = event.y ?? event.pointer?.y;
-
-            this.emit('updated', msg);
+            this.emit('updated', {
+                control: 'Pointer',
+                device,
+                event,
+                target,
+                type: 'Pointer',
+                value: this.pressed,
+                x: event.x ?? event.pointer?.x,
+                y: event.y ?? event.pointer?.y
+            });
         });
         target.addEventListener('pointerup', (event) => {
-            const
-                msg = this.message;
-
-            msg.value = 0;
-            msg.x = event.x ?? event.pointer?.x;
-            msg.y = event.y ?? event.pointer?.y;
-
-            this.emit('updated', msg);
+            this.pressed = 0;
+            this.emit('updated', {
+                control: 'Pointer',
+                device,
+                event,
+                target,
+                type: 'Pointer',
+                value: this.pressed,
+                x: event.x ?? event.pointer?.x,
+                y: event.y ?? event.pointer?.y
+            });
         });
     }
 }
