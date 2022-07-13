@@ -47,10 +47,6 @@ class PixiDevice extends EventEmitter {
             this.emit('updated', msg);
         });
     }
-
-    toJSON () {
-        return msg;
-    }
 }
 
 export default PixiDevice;

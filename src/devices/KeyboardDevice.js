@@ -30,10 +30,6 @@ class KeyboardDevice extends EventEmitter {
             this.emit('updated', msg);
         });
     }
-
-    toJSON () {
-        return this.message;
-    }
 }
 
 export default KeyboardDevice;

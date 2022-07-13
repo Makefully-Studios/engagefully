@@ -22,6 +22,18 @@ class Button {
             controller.emit(this.control, event, this);
         }
     }
+
+    poll () {
+        return this.value;
+    }
+
+    toJSON () {
+        return {
+            control: this.control,
+            type: 'Button',
+            value: this.value
+        };
+    }
 }
 
 export default Button;
