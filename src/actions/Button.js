@@ -5,14 +5,8 @@ class Button {
     }
 
     update (event, controller) {
-        let updated = false;
-
         if (event.value !== this.value) {
-            updated = true;
             this.value = event.value;
-        }
-
-        if (updated) {
             if (this.value === 1) {
                 controller.emit(`${this.control}:pressed`, event, this);
             }

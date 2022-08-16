@@ -52,14 +52,18 @@ class Controller extends EventEmitter {
         });
     }
 
-    poll (id, type) {
+    getControl (id, type) {
         let control = this.controls[id];
             
-        if (!control) {
+        if (!control && type) {
             control = this.addControl(id, type);
         }
 
         return control;
+    }
+
+    poll (id) {
+        return this.controls[id]?.poll?.();
     }
 };
 

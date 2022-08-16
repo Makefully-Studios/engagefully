@@ -5,14 +5,8 @@ class Dial {
     }
 
     update (event, controller) {
-        let updated = false;
-
         if (event.value !== this.value) {
-            updated = true;
             this.value = event.value;
-        }
-
-        if (updated) {
             controller.emit(this.control, event, this);
         }
     }
