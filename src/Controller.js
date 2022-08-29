@@ -27,7 +27,7 @@ class Controller extends EventEmitter {
 
             return control;
         } else {
-            console.warn(`${key}: "${type}" has no associated control class.`);
+            console.warn(`${id}: "${type}" has no associated control class.`);
             return null;
         }
     }

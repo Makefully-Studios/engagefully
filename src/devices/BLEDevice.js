@@ -277,7 +277,7 @@ class WebkitBLEDevice extends EventEmitter {
                 characteristics.forEach(async (characteristic) => {
                     const
                         properties = characteristic.properties,
-                        characteristicDescription = this.uuidMap[characteristic.characteristic],
+                        characteristicDescription = this.uuidMap[characteristic.uuid],
                         friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.uuid;
                     let format = BLEFormats[0x1B]; // Assume "Opaque Structure" unless otherwise specified.
 
