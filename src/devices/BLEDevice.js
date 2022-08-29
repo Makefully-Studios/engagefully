@@ -27,7 +27,22 @@ const
             return getDescriptorValue('2901', characteristic) || getDescriptorValue('00002904-0000-1000-8000-00805f9b34fb', characteristic);
         }
     },
-    getCharacteristicPresentationFormat = getDescriptorValue.bind(null, "2904");
+    getCharacteristicPresentationFormat = getDescriptorValue.bind(null, "2904"),
+    getControllerType = ({description}, customType = 'CustomType') => {
+        switch (description) {
+        case 'Reserved For Future Use':
+            return customType;
+        case 'Boolean':
+            return 'Button';
+        case 'UTF-8 string':
+        case 'UTF-16 string':
+            return 'Text';
+        case 'Opaque Structure':
+            return customType;
+        default:
+            return 'Amount'
+        }
+    };
 
 let ble = null,
     cordova = null;
@@ -99,7 +114,7 @@ class CordovaBLEDevice extends EventEmitter {
 
                 if (properties.indexOf('Notify') >= 0) {
                     const
-                        type = format.description === 'Boolean' ? 'Button' : 'Amount';
+                        type = getControllerType(format, friendlyName);
                     let lastValue = null;
 
                     this.ble.startNotification(device.id, characteristic.service, characteristic.characteristic, (buffer, index) => {
@@ -321,7 +336,7 @@ class WebkitBLEDevice extends EventEmitter {
                                     });
                                 }
                             },
-                            type = format.description === 'Boolean' ? 'Button' : 'Amount';
+                            type = getControllerType(format, friendlyName);
                         let lastValue = null;
 
                         await characteristic.startNotifications();
