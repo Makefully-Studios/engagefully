@@ -81,7 +81,7 @@ class CordovaBLEDevice extends EventEmitter {
                     characteristicDescription = this.uuidMap[characteristic.characteristic],
                     friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.characteristic,
                     descriptors = characteristic.descriptors || [],
-                    format = BLEFormats[getCharacteristicPresentationFormat(characteristicDescription) || 14]; // Assume signed Int 16 unless otherwise specified.
+                    format = BLEFormats[getCharacteristicPresentationFormat(characteristicDescription) || 0x1B]; // Assume "Opaque Structure" unless otherwise specified.
 
                 console.log(friendlyName, characteristic);
 
@@ -264,7 +264,7 @@ class WebkitBLEDevice extends EventEmitter {
                         properties = characteristic.properties,
                         characteristicDescription = this.uuidMap[characteristic.characteristic],
                         friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.uuid;
-                    let format = BLEFormats[14]; // Assume signed Int 16 unless otherwise specified.
+                    let format = BLEFormats[0x1B]; // Assume "Opaque Structure" unless otherwise specified.
 
                     console.log(friendlyName, characteristic);
 
