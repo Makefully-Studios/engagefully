@@ -122,7 +122,6 @@ class CordovaBLEDevice extends EventEmitter {
                             newValue = format.convert(new DataView(buffer));
 
                         if (lastValue !== newValue) {
-                            console.log(`${friendlyName} value changed.`, newValue, index);
                             lastValue = newValue;
                             this.emit('updated', {
                                 control: friendlyName,
@@ -328,7 +327,6 @@ class WebkitBLEDevice extends EventEmitter {
                                     newValue = format.convert(target.value);
 
                                 if (lastValue !== newValue) {
-                                    console.log(`${friendlyName} value changed.`, newValue);
                                     lastValue = newValue;
                                     this.emit('updated', {
                                         control: friendlyName,
