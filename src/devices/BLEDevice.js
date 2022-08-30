@@ -234,23 +234,25 @@ class WebkitBLEDevice extends EventEmitter {
         if (bluetoothDeviceOrOptions?.gatt) { // It's a Bluetooth device
             this.device = bluetoothDeviceOrOptions;
             this.options = null;
-            this.initialize();
         } else {
             this.device = null;
             this.options = bluetoothDeviceOrOptions;
-            try {
-                this.initialize();
-            } catch (e) {
-                // we'll need to try later via user interaction.
-            }
         }
+
+        this.initialize();
     }
 
     async initialize (options) {
         if (!this.device) {
-            this.device = await navigator.bluetooth.requestDevice(options || this.options);
+            try {
+                this.device = await navigator.bluetooth.requestDevice(options || this.options);
+            } catch (e) {
+                // we'll need to try later via user interaction.
+            }
+
             if (!this.device) {
-                throw "No device selected.";
+                console.warn("No device selected.");
+                return;
             }
         }
 
