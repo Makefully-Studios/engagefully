@@ -70,8 +70,6 @@ class CordovaBLEDevice extends EventEmitter {
             this.device = null;
             this.options = bluetoothDeviceOrOptions;
         }
-
-        //this.initialize();
     }
 
     async initialize (options) {
@@ -237,21 +235,14 @@ class WebkitBLEDevice extends EventEmitter {
             this.device = null;
             this.options = bluetoothDeviceOrOptions;
         }
-
-        this.initialize();
     }
 
     async initialize (options) {
         if (!this.device) {
-            try {
-                this.device = await navigator.bluetooth.requestDevice(options || this.options);
-            } catch (e) {
-                // we'll need to try later via user interaction.
-            }
+            this.device = await navigator.bluetooth.requestDevice(options || this.options);
 
             if (!this.device) {
-                console.warn("No device selected.");
-                return;
+                throw "No device selected.";
             }
         }
 
