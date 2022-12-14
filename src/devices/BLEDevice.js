@@ -91,8 +91,9 @@ class CordovaBLEDevice extends EventEmitter {
             characteristics.forEach(async (characteristic) => {
                 const
                     properties = characteristic.properties,
-                    characteristicDescription = this.uuidMap[characteristic.characteristic],
-                    friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.characteristic,
+                    characteristicUUID = characteristic.characteristic.toLowerCase(), // iOS uses uppercase UUID's
+                    characteristicDescription = this.uuidMap[characteristicUUID],
+                    friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristicUUID,
                     descriptors = characteristic.descriptors || [],
                     format = BLEFormats[getCharacteristicPresentationFormat(characteristicDescription) || 0x1B]; // Assume "Opaque Structure" unless otherwise specified.
 
@@ -140,18 +141,22 @@ class CordovaBLEDevice extends EventEmitter {
         console.log('Requesting Device...');
         return new Promise((resolve, reject) => {
             console.log('Starting Scan... ');
-            this.ble.isLocationEnabled(() => {
-                console.log('YES');
-            }, () => {
-                console.log('NO');
-            });
-            this.ble.startScan([], (device) => { // TODO: Make possible to select from list instead of grabbing first one.
+            if (cordova.platformId !== 'ios') {
+                this.ble.isLocationEnabled(() => {
+                    console.log('Location is enabled');
+                }, () => {
+                    console.log('Location is disabled');
+                });
+            }
+            this.ble.startScan((cordova.platformId === 'ios') ? options?.optionalServices ?? [] : [], (device) => { // TODO: Make possible to select from list instead of grabbing first one.
                 const services = options?.optionalServices ?? [];
                 let foundMatch = null;
 
                 console.log('Found', device);
 
-                if (cordova.platformId !== 'ios') {
+                if (cordova.platformId === 'ios') {
+                    foundMatch = device;
+                } else {
                     const
                         a = new Uint8Array(device.advertising),
                         str = Array.prototype.map.call(a, (x) => ('00' + x.toString(16)).slice(-2)).join('');
