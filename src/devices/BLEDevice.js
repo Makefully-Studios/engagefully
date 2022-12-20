@@ -63,6 +63,8 @@ class CordovaBLEDevice extends EventEmitter {
         };
         this.ble = window.ble ?? window.top.ble;
 
+        this.writes = {};
+
         if (bluetoothDeviceOrOptions?.id) { // It's a Bluetooth device
             this.device = bluetoothDeviceOrOptions;
             this.options = null;
@@ -108,7 +110,13 @@ class CordovaBLEDevice extends EventEmitter {
                 }
 
                 if (properties.indexOf('Write') >= 0) {
+                    if (this.writes[friendlyName]) {
+                        throw new Error(`There is already a writable characteristic named "${friendlyName}".`)
+                    }
 
+                    this.writes[friendlyName] = (data) => {
+                        this.ble.write(device.id, characteristic.service, characteristic.characteristic, data.buffer ?? data);
+                    }
                 }
 
                 if (properties.indexOf('Notify') >= 0) {
@@ -221,6 +229,14 @@ class CordovaBLEDevice extends EventEmitter {
             throw 'Device not connected.';
         });
     }
+
+    write (characteristicId, data) {
+        if (!this.writes[characteristicId]) {
+            throw new Error(`No writable characteristic "${characteristicId}".`);
+        }
+
+        this.writes[characteristicId](data);
+    }
 }
 
 class WebkitBLEDevice extends EventEmitter {
@@ -232,6 +248,8 @@ class WebkitBLEDevice extends EventEmitter {
             ...BLECharacteristics,
             ...uuidMap
         };
+
+        this.writes = {};
 
         if (bluetoothDeviceOrOptions?.gatt) { // It's a Bluetooth device
             this.device = bluetoothDeviceOrOptions;
@@ -312,7 +330,16 @@ class WebkitBLEDevice extends EventEmitter {
                     }
 
                     if (properties.write) {
+                        if (this.writes[friendlyName]) {
+                            throw new Error(`There is already a writable characteristic named "${friendlyName}".`)
+                        }
 
+                        this.writes[friendlyName] = (data) => {
+                            const
+                                dv = (data instanceof DataView) ? data : new DataView(data.buffer ?? data);
+
+                            characteristic.writeValue(dv);
+                        }
                     }
 
                     if (properties.notify) {
@@ -373,6 +400,14 @@ class WebkitBLEDevice extends EventEmitter {
         } else {
             throw 'Device not connected.';
         }
+    }
+
+    write (characteristicId, data) {
+        if (!this.writes[characteristicId]) {
+            throw new Error(`No writable characteristic "${characteristicId}".`);
+        }
+
+        this.writes[characteristicId](data);
     }
 }
 
