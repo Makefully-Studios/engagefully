@@ -27,8 +27,12 @@ class Controller extends EventEmitter {
 
             return control;
         } else {
-            console.warn(`${id}: "${type}" has no associated control class.`);
-            return null;
+            const
+                control = this.controls[id] = new this.controlMap.Data(id);
+
+            console.warn(`${id}: "${type}" has no associated control class. Using 'Data'.`);
+
+            return control;
         }
     }
 
