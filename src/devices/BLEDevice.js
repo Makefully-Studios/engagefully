@@ -115,7 +115,7 @@ class CordovaBLEDevice extends EventEmitter {
                     }
 
                     this.writes[friendlyName] = (data) => {
-                        this.ble.write(device.id, characteristic.service, characteristic.characteristic, data.buffer ?? data);
+                        return this.ble.withPromises.write(device.id, characteristic.service, characteristic.characteristic, data.buffer ?? data);
                     }
                 }
 
@@ -235,7 +235,7 @@ class CordovaBLEDevice extends EventEmitter {
             throw new Error(`No writable characteristic "${characteristicId}".`);
         }
 
-        this.writes[characteristicId](data);
+        return this.writes[characteristicId](data);
     }
 }
 
@@ -338,7 +338,7 @@ class WebkitBLEDevice extends EventEmitter {
                             const
                                 dv = (data instanceof DataView) ? data : new DataView(data.buffer ?? data);
 
-                            characteristic.writeValue(dv);
+                            return characteristic.writeValueWithResponse(dv);
                         }
                     }
 
@@ -407,7 +407,7 @@ class WebkitBLEDevice extends EventEmitter {
             throw new Error(`No writable characteristic "${characteristicId}".`);
         }
 
-        this.writes[characteristicId](data);
+        return this.writes[characteristicId](data);
     }
 }
 
