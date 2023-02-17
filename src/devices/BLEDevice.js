@@ -304,14 +304,19 @@ class WebkitBLEDevice extends EventEmitter {
                         let formatFound = false;
 
                         descriptors.forEach(async (descriptor) => {
-                            const
-                                value = (BLEDescriptors[descriptor.uuid] ?? BLEDescriptors['default']).convert(await descriptor.readValue());
+                            try {
+                                const
+                                    value = (BLEDescriptors[descriptor.uuid] ?? BLEDescriptors['default']).convert(await descriptor.readValue());
 
-                            if (descriptor.uuid === presentationFormat) {
-                                format = BLEFormats[value] || BLEFormats[0];
-                                formatFound = true;
+                                if (descriptor.uuid === presentationFormat) {
+                                    format = BLEFormats[value] || BLEFormats[0];
+                                    formatFound = true;
+                                }
+
+                                console.log(`${descriptor.uuid} | ${friendlyName}`, value);
+                            } catch (e) {
+                                console.warn(`Error converting data from descriptor "${descriptor.uuid}".`, e);
                             }
-                            console.log(`${descriptor.uuid} | ${friendlyName}`, value);
                         });
 
                         if (!formatFound) {
