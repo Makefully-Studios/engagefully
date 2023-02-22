@@ -261,7 +261,10 @@ class WebkitBLEDevice extends EventEmitter {
     }
 
     async initialize (options) {
-        if (!this.device) {
+        const
+            deviceAlreadySelected = !!this.device;
+
+        if (!deviceAlreadySelected) {
             this.device = await navigator.bluetooth.requestDevice(options || this.options);
 
             if (!this.device) {
@@ -269,109 +272,118 @@ class WebkitBLEDevice extends EventEmitter {
             }
         }
 
-        this.device.addEventListener('gattserverdisconnected', () => {
-            console.log(`${this.deviceName} disconnected.`);
-            this.emit('updated', {
-                control: `${this.deviceName}Connection`,
-                device: this.deviceName,
-                type: 'Button',
-                value: 0
-            });
-        });
-
-        if (await this.connect()) {
-            const
-                gatt = this.device.gatt,
-                services = await gatt.getPrimaryServices(),
-                presentationFormat = '00002904-0000-1000-8000-00805f9b34fb';
-
-            services.forEach(async (service) => {
+        try {
+            if (await this.connect()) {
                 const
-                    characteristics = await service.getCharacteristics();
-                
-                characteristics.forEach(async (characteristic) => {
-                    const
-                        properties = characteristic.properties,
-                        characteristicDescription = this.uuidMap[characteristic.uuid],
-                        friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.uuid;
-                    let format = BLEFormats[0x1B]; // Assume "Opaque Structure" unless otherwise specified.
+                    gatt = this.device.gatt,
+                    services = await gatt.getPrimaryServices(),
+                    presentationFormat = '00002904-0000-1000-8000-00805f9b34fb';
 
-                    console.log(friendlyName, characteristic);
-
-                    try {
-                        const
-                            descriptors = await characteristic.getDescriptors();
-                        let formatFound = false;
-
-                        descriptors.forEach(async (descriptor) => {
-                            try {
-                                const
-                                    value = (BLEDescriptors[descriptor.uuid] ?? BLEDescriptors['default']).convert(await descriptor.readValue());
-
-                                if (descriptor.uuid === presentationFormat) {
-                                    format = BLEFormats[value] || BLEFormats[0];
-                                    formatFound = true;
-                                }
-
-                                console.log(`${descriptor.uuid} | ${friendlyName}`, value);
-                            } catch (e) {
-                                console.warn(`Error converting data from descriptor "${descriptor.uuid}".`, e);
-                            }
-                        });
-
-                        if (!formatFound) {
-                            const
-                                localDefinition = getCharacteristicPresentationFormat(characteristicDescription);
-
-                            if (localDefinition) {
-                                format = BLEFormats[localDefinition];
-                            }
-                        }
-                    } catch (e) {
-                    }
-
-                    if (properties.read) {
-
-                    }
-
-                    if (properties.write) {
-                        if (this.writes[friendlyName]) {
-                            throw new Error(`There is already a writable characteristic named "${friendlyName}".`)
-                        }
-
-                        this.writes[friendlyName] = (data) => {
-                            const
-                                dv = (data instanceof DataView) ? data : new DataView(data.buffer ?? data);
-
-                            return characteristic.writeValueWithResponse(dv);
-                        }
-                    }
-
-                    if (properties.notify) {
-                        const
-                            listener = (event) => {
-                                const
-                                    target = event.currentTarget,
-                                    newValue = format.convert(target.value);
-
-                                if (lastValue !== newValue) {
-                                    lastValue = newValue;
-                                    this.emit('updated', {
-                                        control: friendlyName,
-                                        device: this.deviceName,
-                                        type,
-                                        value: newValue
-                                    });
-                                }
-                            },
-                            type = getControllerType(format, friendlyName);
-                        let lastValue = null;
-
-                        await characteristic.startNotifications();
-                        characteristic.addEventListener('characteristicvaluechanged', listener);
-                    }
+                this.device.addEventListener('gattserverdisconnected', () => {
+                    console.log(`${this.deviceName} disconnected.`);
+                    this.emit('updated', {
+                        control: `${this.deviceName}Connection`,
+                        device: this.deviceName,
+                        type: 'Button',
+                        value: 0
+                    });
                 });
-            });
+            
+                services.forEach(async (service) => {
+                    const
+                        characteristics = await service.getCharacteristics();
+                    
+                    characteristics.forEach(async (characteristic) => {
+                        const
+                            properties = characteristic.properties,
+                            characteristicDescription = this.uuidMap[characteristic.uuid],
+                            friendlyName = getCharacteristicUserDescription(characteristicDescription) || characteristic.uuid;
+                        let format = BLEFormats[0x1B]; // Assume "Opaque Structure" unless otherwise specified.
+
+                        console.log(friendlyName, characteristic);
+
+                        try {
+                            const
+                                descriptors = await characteristic.getDescriptors();
+                            let formatFound = false;
+
+                            descriptors.forEach(async (descriptor) => {
+                                try {
+                                    const
+                                        value = (BLEDescriptors[descriptor.uuid] ?? BLEDescriptors['default']).convert(await descriptor.readValue());
+
+                                    if (descriptor.uuid === presentationFormat) {
+                                        format = BLEFormats[value] || BLEFormats[0];
+                                        formatFound = true;
+                                    }
+
+                                    console.log(`${descriptor.uuid} | ${friendlyName}`, value);
+                                } catch (e) {
+                                    console.warn(`Error converting data from descriptor "${descriptor.uuid}".`, e);
+                                }
+                            });
+
+                            if (!formatFound) {
+                                const
+                                    localDefinition = getCharacteristicPresentationFormat(characteristicDescription);
+
+                                if (localDefinition) {
+                                    format = BLEFormats[localDefinition];
+                                }
+                            }
+                        } catch (e) {
+                        }
+
+                        if (properties.read) {
+
+                        }
+
+                        if (properties.write) {
+                            if (this.writes[friendlyName]) {
+                                throw new Error(`There is already a writable characteristic named "${friendlyName}".`)
+                            }
+
+                            this.writes[friendlyName] = (data) => {
+                                const
+                                    dv = (data instanceof DataView) ? data : new DataView(data.buffer ?? data);
+
+                                return characteristic.writeValueWithResponse(dv);
+                            }
+                        }
+
+                        if (properties.notify) {
+                            const
+                                listener = (event) => {
+                                    const
+                                        target = event.currentTarget,
+                                        newValue = format.convert(target.value);
+
+                                    if (lastValue !== newValue) {
+                                        lastValue = newValue;
+                                        this.emit('updated', {
+                                            control: friendlyName,
+                                            device: this.deviceName,
+                                            type,
+                                            value: newValue
+                                        });
+                                    }
+                                },
+                                type = getControllerType(format, friendlyName);
+                            let lastValue = null;
+
+                            await characteristic.startNotifications();
+                            characteristic.addEventListener('characteristicvaluechanged', listener);
+                        }
+                    });
+                });
+            } else {
+                throw "Not able to connect to device.";
+            }
+        } catch (e) {
+            if (!deviceAlreadySelected) { // We'll try anew next time.
+                this.device = null;
+            }
+            throw e;
         }
     }
       
