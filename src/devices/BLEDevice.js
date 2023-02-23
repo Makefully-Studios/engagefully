@@ -272,6 +272,16 @@ class WebkitBLEDevice extends EventEmitter {
             }
         }
 
+        this.device.addEventListener('gattserverdisconnected', () => {
+            console.log(`${this.deviceName} disconnected.`);
+            this.emit('updated', {
+                control: `${this.deviceName}Connection`,
+                device: this.deviceName,
+                type: 'Button',
+                value: 0
+            });
+        });
+    
         try {
             if (await this.connect()) {
                 const
@@ -279,16 +289,6 @@ class WebkitBLEDevice extends EventEmitter {
                     services = await gatt.getPrimaryServices(),
                     presentationFormat = '00002904-0000-1000-8000-00805f9b34fb';
 
-                this.device.addEventListener('gattserverdisconnected', () => {
-                    console.log(`${this.deviceName} disconnected.`);
-                    this.emit('updated', {
-                        control: `${this.deviceName}Connection`,
-                        device: this.deviceName,
-                        type: 'Button',
-                        value: 0
-                    });
-                });
-            
                 services.forEach(async (service) => {
                     const
                         characteristics = await service.getCharacteristics();
@@ -381,6 +381,9 @@ class WebkitBLEDevice extends EventEmitter {
             }
         } catch (e) {
             if (!deviceAlreadySelected) { // We'll try anew next time.
+                if (this.device.gatt.connected) {
+                    this.device.gatt.disconnect();
+                }
                 this.device = null;
             }
             throw e;
