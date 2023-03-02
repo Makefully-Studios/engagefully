@@ -217,6 +217,7 @@ class CordovaBLEDevice extends EventEmitter {
                         type: 'Button',
                         value: 0
                     });
+                    this.writes = {};
                 });
             }
         });
@@ -280,6 +281,7 @@ class WebkitBLEDevice extends EventEmitter {
                 type: 'Button',
                 value: 0
             });
+            this.writes = {};
         });
     
         try {
