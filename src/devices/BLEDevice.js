@@ -116,7 +116,7 @@ class CordovaBLEDevice extends EventEmitter {
 
                     this.writes[friendlyName] = (data) => {
                         return this.ble.withPromises.write(device.id, characteristic.service, characteristic.characteristic, data.buffer ?? data);
-                    }
+                    };
                 }
 
                 if (properties.indexOf('Notify') >= 0) {
@@ -350,7 +350,7 @@ class WebkitBLEDevice extends EventEmitter {
                                     dv = (data instanceof DataView) ? data : new DataView(data.buffer ?? data);
 
                                 return characteristic.writeValueWithResponse(dv);
-                            }
+                            };
                         }
 
                         if (properties.notify) {
@@ -383,7 +383,7 @@ class WebkitBLEDevice extends EventEmitter {
             }
         } catch (e) {
             if (!deviceAlreadySelected) { // We'll try anew next time.
-                if (this.device.gatt.connected) {
+                if (this.device?.gatt?.connected) {
                     this.device.gatt.disconnect();
                 }
                 this.device = null;
@@ -417,7 +417,7 @@ class WebkitBLEDevice extends EventEmitter {
     }
 
     disconnect () {
-        if (this.device?.gatt.connected) {
+        if (this.device?.gatt?.connected) {
             return this.device.gatt.disconnect();
         } else {
             throw 'Device not connected.';
