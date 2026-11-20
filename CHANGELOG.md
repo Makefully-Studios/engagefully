@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-20
+
+### Fixed
+
+- Verify npm Trusted Publisher OIDC publish from GitHub Actions `release.yml`
+
 ## [0.2.0] - 2026-11-20
 
 ### Added
