@@ -1,7 +1,7 @@
 {
   "name": "@makefully/engagefully",
-  "version": "0.1.0",
-  "description": "Device-agnostic input controller: keyboard, gamepad, pointer, and more → Button/Joystick actions.",
+  "version": "0.2.0",
+  "description": "Device-agnostic input: keyboard/gamepad/pointer → Button/Joystick, plus ActionMap logical bindings.",
   "main": "./lib/engagefully.js",
   "module": "./src/index.js",
   "exports": {
