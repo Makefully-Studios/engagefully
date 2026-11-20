@@ -266,6 +266,10 @@ class WebkitBLEDevice extends EventEmitter {
             deviceAlreadySelected = !!this.device;
 
         if (!deviceAlreadySelected) {
+            if (!navigator.bluetooth) {
+                throw "This web browser does not support Bluetooth.";
+            }
+
             this.device = await navigator.bluetooth.requestDevice(options || this.options);
 
             if (!this.device) {

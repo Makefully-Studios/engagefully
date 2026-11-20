@@ -1,29 +1,68 @@
 {
-    "name": "engagefully",
-    "version": "0.0.1",
-    "description": "Engagefully by Makefully",
-    "main": "lib/engagefully.js",
-    "module": "src/index.js",
-    "scripts": {
-        "start": "webpack-dev-server --env dev",
-        "build:release": "webpack --env prod",
-        "build:debug": "webpack --env dev"
+  "name": "@makefully/engagefully",
+  "version": "0.1.0",
+  "description": "Device-agnostic input controller: keyboard, gamepad, pointer, and more → Button/Joystick actions.",
+  "main": "./lib/engagefully.js",
+  "module": "./src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "default": "./lib/engagefully.js"
     },
-    "contributors": [
-        "Derek Detweiler <derek@makefullystudios.com>"
-    ],
-    "license": "",
-    "dependencies": {
-        "broadcast-channel": "^4.10.0"
-    },
-    "devDependencies": {
-        "@babel/core": "^7.4.3",
-        "@babel/polyfill": "^7.0.0",
-        "@babel/preset-env": "^7.4.3",
-        "babel-loader": "^8.0.2",
-        "file-loader": "^6.2.0",
-        "webpack": "^5.68.0",
-        "webpack-cli": "^4.9.2",
-        "webpack-dev-server": "^4.7.3"
-    }
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "webpack-dev-server --env dev",
+    "build": "webpack --env prod",
+    "build:release": "webpack --env prod",
+    "build:debug": "webpack --env dev",
+    "test": "node -e \"console.log('no unit tests yet')\"",
+    "prepublishOnly": "npm run build:release"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Makefully-Studios/engagefully.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Makefully-Studios/engagefully/issues"
+  },
+  "homepage": "https://github.com/Makefully-Studios/engagefully#readme",
+  "keywords": [
+    "engagefully",
+    "makefully",
+    "input",
+    "keyboard",
+    "gamepad",
+    "controller",
+    "gamedev"
+  ],
+  "contributors": [
+    "Derek Detweiler <derek@makefullystudios.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "broadcast-channel": "^4.10.0",
+    "events": "^3.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/polyfill": "^7.0.0",
+    "@babel/preset-env": "^7.4.3",
+    "babel-loader": "^8.0.2",
+    "file-loader": "^6.2.0",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.3"
+  }
 }
